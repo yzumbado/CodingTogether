@@ -84,6 +84,7 @@
     self.history.text = @"";
     self.display.text = @"0";
     self.isCurrentNumberNegative = NO;
+    self.userIsInTheMiddleOfEnteringANumber = NO;
 }
 - (IBAction)backPressed {
     if (self.userIsInTheMiddleOfEnteringANumber) {
