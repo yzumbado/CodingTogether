@@ -13,15 +13,18 @@
 @property (nonatomic) BOOL userIsInTheMiddleOfEnteringANumber;
 @property (nonatomic, strong) CalculatorBrain *brain;
 @property (nonatomic) BOOL isCurrentNumberNegative;
+@property (nonatomic) BOOL userEnteredAVariable;
 
 @end
 
 @implementation CalculatorViewController
 @synthesize display = _display;
 @synthesize history = _history;
+@synthesize debugScreen = _debugScreen;
 @synthesize userIsInTheMiddleOfEnteringANumber = _userIsInTheMiddleOfEnteringANumber;
 @synthesize brain = _brain;
 @synthesize isCurrentNumberNegative = _isCurrentNumberNegative;  
+@synthesize userEnteredAVariable = _userEnteredAVariable;
 
 - (CalculatorBrain *) brain{
     if (!_brain) {
@@ -40,11 +43,25 @@
     }
 }
 
+- (IBAction)variablePressed:(UIButton *)sender {
+    self.display.text = sender.currentTitle;
+    self.userEnteredAVariable = YES;
+    [self enterPressed];
+    
+}
+
 - (IBAction)enterPressed {
-    [self.brain pushOperand: [self.display.text doubleValue]];
+    if (self.userEnteredAVariable) {
+        [self.brain pushVariable: self.display.text];
+    }
+    else {
+        [self.brain pushOperand: [self.display.text doubleValue]];
+    }   
+    
     self.history.text = [NSString stringWithFormat:@"%@ %@", self.history.text, self.display.text];
     self.userIsInTheMiddleOfEnteringANumber = NO;
     self.isCurrentNumberNegative = NO;
+    self.userEnteredAVariable = NO;
 }
 
 - (IBAction)operationPressed:(UIButton *)sender {
@@ -97,6 +114,13 @@
     }
 }
 
+- (IBAction)debugPressed:(UIButton *)sender {
+    NSSet *variablesUsedOnProgram = [CalculatorBrain variablesUsedInProgram: self.brain.program];
+    for (NSString *variable in variablesUsedOnProgram) {
+        self.debugScreen.text = [self.debugScreen.text stringByAppendingFormat:variable];
+    }
+}
+
 - (IBAction)signChangePressed:(UIButton *)sender {
     if (self.userIsInTheMiddleOfEnteringANumber) {
         if (self.isCurrentNumberNegative) {
@@ -110,5 +134,9 @@
     }else {
         [self operationPressed:sender];
     }
+}
+- (void)viewDidUnload {
+    [self setDebugScreen:nil];
+    [super viewDidUnload];
 }
 @end
