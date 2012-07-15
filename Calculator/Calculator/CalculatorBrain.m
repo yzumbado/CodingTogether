@@ -29,13 +29,18 @@
 
 + (NSString *)descriptionOfProgram:(id)program
 {
+    // Test Branch
     return @"Implement this in Homework #2";
 }
-
 
 - (void)pushOperand:(double)operand
 {
     [self.programStack addObject:[NSNumber numberWithDouble:operand]];
+}
+
+- (void)pushVariable:(NSString *)variable
+{
+    [self.programStack addObject: variable];
 }
 
 
@@ -45,7 +50,7 @@
     return [[self class] runProgram:self.program];
 }
 
-+ (double)popOperandOffProgramStack:(NSMutableArray *)stack
++ (double)popOperandOffProgramStack:(NSMutableArray *)stack usingVariablesValues:(NSDictionary *) variableValues
 {
     double result = 0;
     
@@ -60,25 +65,29 @@
     {
         NSString *operation = topOfStack;
         if ([operation isEqualToString:@"+"]) {
-            result = [self popOperandOffProgramStack:stack] + [self popOperandOffProgramStack:stack];
+            result = [self popOperandOffProgramStack:stack usingVariablesValues: variableValues] + [self popOperandOffProgramStack:stack usingVariablesValues: variableValues];
         } else if ([@"*" isEqualToString:operation]) {
-            result = [self popOperandOffProgramStack:stack] * [self popOperandOffProgramStack:stack];
+            result = [self popOperandOffProgramStack:stack usingVariablesValues: variableValues] * [self popOperandOffProgramStack:stack usingVariablesValues: variableValues];
         } else if ([operation isEqualToString:@"-"]) {
-            double subtrahend = [self popOperandOffProgramStack:stack];
-            result = [self popOperandOffProgramStack:stack] - subtrahend;
+            double subtrahend = [self popOperandOffProgramStack:stack usingVariablesValues: variableValues];
+            result = [self popOperandOffProgramStack:stack usingVariablesValues: variableValues] - subtrahend;
         } else if ([operation isEqualToString:@"/"]) {
-            double divisor = [self popOperandOffProgramStack:stack];
-            if (divisor) result = [self popOperandOffProgramStack:stack] / divisor;
+            double divisor = [self popOperandOffProgramStack:stack usingVariablesValues: variableValues];
+            if (divisor) result = [self popOperandOffProgramStack:stack usingVariablesValues: variableValues] / divisor;
         }else if ([@"sin" isEqualToString: operation]) {
-            result = sin([self popOperandOffProgramStack:stack]);
+            result = sin([self popOperandOffProgramStack:stack usingVariablesValues: variableValues]);
         }else if ([@"cos" isEqualToString: operation]) {
-            result = cos([self popOperandOffProgramStack:stack]);
+            result = cos([self popOperandOffProgramStack:stack usingVariablesValues: variableValues]);
         }else if ([@"sqrt" isEqualToString: operation]) {
-            result = sqrt([self popOperandOffProgramStack:stack]);
+            result = sqrt([self popOperandOffProgramStack:stack usingVariablesValues: variableValues]);
         }else if ([@"π" isEqualToString: operation]) {
             result = 3.14159265;
         }else if ([@"+ / -" isEqualToString: operation]) {
-            result = [self popOperandOffProgramStack:stack] * -1;
+            result = [self popOperandOffProgramStack:stack usingVariablesValues: variableValues] * -1;
+        }else {
+            if (variableValues) {
+                result = 0;
+            }
         }    
     }
     return result;
@@ -90,9 +99,14 @@
     if ([program isKindOfClass:[NSArray class]]) {
         stack = [program mutableCopy];
     }
-    return [self popOperandOffProgramStack:stack];
+    return [self popOperandOffProgramStack:stack usingVariablesValues: Nil];
 }
-    
+
++ (double)runProgram:(id)program
+usingVariablesValues:(NSDictionary *) variableValues
+{
+    return 0;
+}
     
 -(void)clearBrain{
     [self.programStack removeAllObjects];
