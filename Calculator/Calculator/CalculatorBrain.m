@@ -29,8 +29,11 @@
 
 + (NSString *)descriptionOfProgram:(id)program
 {
-    // Test Branch
-    return @"Implement this in Homework #2";
+    NSMutableArray *stack;
+    if ([program isKindOfClass:[NSArray class]]) {
+        stack = [program mutableCopy];
+    }
+    return [self descriptionOfTopOfStack:stack];
 }
 
 - (void)pushOperand:(double)operand
@@ -49,6 +52,42 @@
     [self.programStack addObject:operation];
     return [[self class] runProgram:self.program];
 }
+
++ (NSString *)descriptionOfTopOfStack:(NSMutableArray *)stack
+{
+    NSString *resultDescription = @"";
+    
+    id topOfStack = [stack lastObject];
+    if (topOfStack) [stack removeLastObject];
+    
+    if ([topOfStack isKindOfClass:[NSNumber class]])
+    {
+        resultDescription = [resultDescription stringByAppendingFormat:@"%@", [topOfStack stringValue]];
+    }
+    else if ([topOfStack isKindOfClass:[NSString class]])
+    {
+        NSString *operation = topOfStack;
+        if ([self isSingleOperandOperation:operation]) {
+                resultDescription = [resultDescription stringByAppendingFormat: @"%@(%@)", operation,[self descriptionOfTopOfStack:stack]];
+        }else if ([self isTwoOperandOperation:operation]) {
+            NSString *firstNextToOperation = @"";
+            if (([self isLowestPrecedenceOperation:operation] && [self isHighestPrecedenceOperation: [stack lastObject]]) ||
+                ([self isLowestPrecedenceOperation:operation] && ![self isOperation:[stack lastObject]]) ||
+                (![self isOperation: [stack lastObject]] && stack.count == 2)) { // This is the las operation.
+                //No Parentesis
+                firstNextToOperation = [self descriptionOfTopOfStack:stack];
+                resultDescription = [resultDescription stringByAppendingFormat: @"%@ %@ %@",[self descriptionOfTopOfStack:stack],operation,firstNextToOperation];
+            }else{
+                firstNextToOperation = [self descriptionOfTopOfStack:stack];
+                resultDescription = [resultDescription stringByAppendingFormat: @"(%@ %@ %@)",[self descriptionOfTopOfStack:stack],operation,firstNextToOperation];
+            }
+        }else {
+            resultDescription = [resultDescription stringByAppendingFormat: @"%@", operation];
+        }
+    }
+    return resultDescription;
+}
+
 
 + (double)popOperandOffProgramStack:(NSMutableArray *)stack
 {
@@ -115,11 +154,6 @@
 
 + (double)runProgram:(id)program
 {
-//    NSMutableArray *stack;
-//    if ([program isKindOfClass:[NSArray class]]) {
-//        stack = [program mutableCopy];
-//    }
-//    return [self popOperandOffProgramStack:stack];
     return [self runProgram:program usingVariablesValues:Nil];
 }
 
@@ -164,9 +198,15 @@ usingVariablesValues:(NSDictionary *) variableValues
 }
                          
 // Private Methods
++ (BOOL) isNoOperandOperation:(NSString *) operation{
+    NSSet *singleOperandOperations;
+    singleOperandOperations = [NSSet setWithObjects:@"π", nil];
+    return [singleOperandOperations containsObject: operation];
+}
+
 + (BOOL) isSingleOperandOperation:(NSString *) operation{
     NSSet *singleOperandOperations;
-    singleOperandOperations = [NSSet setWithObjects:@"sin",@"cos",@"sqrt",@"π",@"+ / -", nil];
+    singleOperandOperations = [NSSet setWithObjects:@"sin",@"cos",@"sqrt",@"+ / -", nil];
     return [singleOperandOperations containsObject: operation];
 }
 
@@ -176,8 +216,21 @@ usingVariablesValues:(NSDictionary *) variableValues
     return [twoOperandOperations containsObject: operation];
 }
 
++ (BOOL) isLowestPrecedenceOperation:(NSString *) operation{
+    NSSet *twoOperandOperations;
+    twoOperandOperations = [NSSet setWithObjects:@"+",@"-", nil];
+    return [twoOperandOperations containsObject: operation];
+}
+
++ (BOOL) isHighestPrecedenceOperation:(NSString *) operation{
+    NSSet *twoOperandOperations;
+    twoOperandOperations = [NSSet setWithObjects:@"*",@"/", nil];
+    return [twoOperandOperations containsObject: operation];
+}
+
+
 + (BOOL) isOperation: (NSString *) posibleOperation{
-    return [self isSingleOperandOperation: posibleOperation] || [self isTwoOperandOperation: posibleOperation];
+    return [self isNoOperandOperation:posibleOperation] || [self isSingleOperandOperation: posibleOperation] || [self isTwoOperandOperation: posibleOperation];
 }
 
 

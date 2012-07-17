@@ -115,10 +115,13 @@
 }
 
 - (IBAction)debugPressed:(UIButton *)sender {
-    NSSet *variablesUsedOnProgram = [CalculatorBrain variablesUsedInProgram: self.brain.program];
-    for (NSString *variable in variablesUsedOnProgram) {
-        self.debugScreen.text = [self.debugScreen.text stringByAppendingFormat:variable];
-    }
+//    NSSet *variablesUsedOnProgram = [CalculatorBrain variablesUsedInProgram: self.brain.program];
+//    for (NSString *variable in variablesUsedOnProgram) {
+//        self.debugScreen.text = [self.debugScreen.text stringByAppendingFormat:variable];
+//    }
+    NSString *descriptionOfProgram = [CalculatorBrain descriptionOfProgram: self.brain.program];
+    self.debugScreen.text = descriptionOfProgram;
+    
 }
 
 - (IBAction)signChangePressed:(UIButton *)sender {
